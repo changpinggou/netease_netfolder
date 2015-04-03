@@ -1,0 +1,90 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=GBK" />
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<title>极速3.5 网盘</title>
+<style type="text/css">
+/* reset */
+body{color:#000;background:#fff;overflow:auto;margin:0;padding:0}
+body/*,table*/{font-size:12px;/*line-height:166.6%*/}
+body,input,select,button,textarea{font-family:verdana,sans-serif}
+h1,h2,h3,h4,h5,h6,select,input,textarea,button,table{font-size:100%}
+h1,h2,h3,h4,h5,h6,ul,ol,li,form,p,dl,dt,dd,table,th,td,img,blockquote{margin:0;padding:0;border:0}
+input,button,textarea,img{line-height:normal;outline:0}
+abbr,acronym,address,cite,q,em,code,var,dfn,ins{font-style:normal;text-decoration:none;border:0}
+q:before,q:after{content:""}
+ul,ol{list-style:none}
+table{border-collapse:collapse;border-spacing:0}
+select,input,button,button img,textarea,label,img{margin:0;vertical-align:middle}
+.ipt-r,
+.ipt-c{width:16px;height:16px;_width:15px;_height:15px;-height:14px;padding:0;margin:2px 3px 2px 0;overflow:hidden;-ms-box-sizing:border-box}
+
+.ico{display:-moz-inline-box;-moz-box-align:center;display:inline-block;+display:inline;zoom:1;vertical-align:middle}
+
+/* 折叠/展开图标 */
+.ico-node{background-image:url(http://mimg.126.net/xm/all/netfolder/100312/img/bg.gif);background-repeat:no-repeat}
+
+/* 文件图标 */
+.ico-file{width:16px;height:16px;background-image:url(http://mimg.126.net/xm/all/style_comm/img/file_ico.png);background-repeat:no-repeat;background-position:0 0}
+	.ico-file-dir{background-position:-384px -32px}
+
+/* 树状目录 */
+.g-tree{white-space:nowrap;}
+.g-tree a,
+.g-tree .node,
+.g-tree .ico-node{cursor:pointer}
+.g-tree a,
+.g-tree .node{margin-left:16px;text-decoration:none;color:#000}
+.g-tree ul{margin-left:20px}
+.g-tree li{position:relative;zoom:1;margin-top:2px;+margin-top:4px}
+.g-tree .unfold ul{display:block}
+.g-tree .fold ul{display:none}
+.g-tree .ico-node{width:16px;height:14px;line-height:999em;overflow:hidden;position:absolute;left:0;top:3px;margin:0}
+.g-tree .unfold .ico-node{background-position:-160px -30px;+background-position-y:-32px}
+.g-tree .fold .ico-node{background-position:-160px 2px;+background-position-y:0}
+.g-tree .slcted{background:#EAE6D4;padding:2px 0}
+.g-tree .ipt-t-rename{border:1px solid #000;width:50px}
+</style>
+
+<script language="JavaScript">
+  var gRootDirId=-1;
+  /**
+  选择某一目录
+  **/
+	function fSelectFlder(oSpan){
+  	if(oSpan ===undefined)return;
+		if(window.parent.fid){
+       var preSlcted = document.getElementById(window.parent.fid);
+			preSlcted && (preSlcted.className = "");
+		}
+		oSpan.className = "slcted";
+		window.selectedSpan = oSpan;
+		window.parent.fid = oSpan.id;
+		window.parent.dirname = oSpan.getAttribute("dirname");
+  };
+
+  function fWpGetTree(){
+    window.parent.DirStructureHtml(function(result,curDirId){
+    	 if(result === "error"){
+     		result = "请求目录信息出错";
+         window.parent.DirStructureHtml("reset");
+      }
+    	 document.body.innerHTML = result;
+      window.fid = curDirId;
+      var oSpan = document.getElementById(window.fid);
+      if(!oSpan)return;
+      oSpan.className = "slcted";
+      window.fid = oSpan.id;
+	    oSpan.focus();
+    });
+  };
+
+  window.onload = function(){
+    fWpGetTree();
+  };
+</script>
+</head>
+<body>
+</body>
+</html>

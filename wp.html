@@ -1,0 +1,534 @@
+﻿<html>
+  <head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="keywords" content="" />
+    
+		<title>极速3.5 网盘</title>
+		<script type="text/javascript" src="http://mimg.126.net/xm/all/style_comm/js/theme_output.js"></script>
+		<!--2010-5-19 网盘所有页面更改css url-->
+		<!--
+		<link href="css/style.css" rel="stylesheet" type="text/css" />
+		-->
+    <script language="javascript" src="globaldata.js"></script>
+		<link href="http://mimg.126.net/xm/all/netfolder/100603/css/style_101101.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="http://mimg.126.net/p/tools/jquery/jquery-1.3.2.min.js"></script> 
+    <script language="javascript" src="tools.js"></script> 
+    <script language="javascript" src="backend.js"></script>
+    <script language="javascript" src="netfolder.js"></script>  
+
+    <script id="tmpl_title_area" type="text/html">
+       <a id="hrefFileCenter" href="javascript:void(0)" style="text-decoration:none;">文件中心</a><span id="spnFileCenter" style="">&nbsp;&gt;&gt;&nbsp;
+		  <h2>网盘</h2>
+      <span class="txt-info">本页共${total_foldercnt}个文件夹 ${total_filecnt}个文件 | 容量：
+      	<span class="g-probar" title="已使用${percent}">
+        	<span style="width:${percent}"></span>
+        </span>
+        <span class="maxsize">${usedCapacity}/${totalCapacity}</span> 
+        <strong><a id ="capacity_upgrade" href="javascript:void(0)">升级</a></strong>&nbsp;
+        <a id="feedback" href="javascript:void(0)">意见反馈</a>&nbsp;
+      </span>
+		  <div class="ext">
+			  <a href="javascript:void(0)" class="lock"><img src="${lock_icon_url}" alt="${lock_alt_txt}"/></a>
+			  <span class="mode">
+				  显示：<a href="javascript:void(0)" id="list_mode" class="ico ico-mode ico-mode-list" title="列表显示"></a> 
+                <a href="javascript:void(0)" id="icon_mode" class="ico ico-mode ico-mode-pic" title="图标显示"></a>
+			  </span>
+		  </div
+    </script>   
+    <script id="tmpl_frame_header" type="text/html">
+       <div>
+       	<a id="header_path" href="javascript:void(0)">路径</a>：
+        {{each paths}}
+        	<a id="path_${$value.id}" dirId=${$value.id} href="javascript:void(0)">${$value.dirName}</a>
+          <span class="txt-info"> &gt;&gt; </span>
+        {{/each}}
+        ${curFolderName}
+        <strong id ="upgrade163vip" style="position:absolute;right:0;top:0;">
+        	<a href="javascipt:void(0)">开启vip特权(18G)
+          </a>
+        </strong>
+      </div>
+    </script>
+     
+    <script id="tmpl_select_option" type="text/html">
+    		<option value="${curPage}">${curPage}/${totalPage}</option>
+    </script>
+    <!--工具栏start-->    
+    <script id="tmpl_frame_toolbar" type="text/html">
+      <div class="btngrp">
+        <div id="tb_upload" class="btn btn-dft txt-b"><span>上 传</span></div>
+      </div>
+      <div class="btngrp">
+        <div id= "tb_createfodler"class="btn btn-dft"><span>新建文件夹</span></div>
+      </div>
+      <div class="btngrp">
+        <div id="tb_download" class="btn btn-dft btn-dft-gl" style="position:relative"><span>下 载</span></div>
+        <div id="tb_del" class="btn btn-dft btn-dft-gc"><span>删 除</span></div>
+        <div id="tb_send" class="btn btn-dft btn-dft-pd btn-dft-gc"><span>发 送</span><b class="arr"></b></div>
+        <div id="tb_move" class="btn btn-dft btn-dft-gc"><span>移 动</span></div>
+      </div>
+      <div class="btngrp">
+        <div id="tb_sort" class="btn btn-dft-pd btn-dft"><span>排 序</span><b class="arr"></b></div>
+      </div>
+      <div class="btngrp btngrp-ext">
+        <a id="first_page" href="javascript:void(0)">首页</a>
+        <a id="pre_page"   href="javascript:void(0)">上页</a>
+        <a id="next_page"  href="javascript:void(0)">下页</a>
+        <a id="last_page"  href="javascript:void()">末页</a>
+
+        <select id="pagesel" name="page_no">
+        </select>
+      </div>
+    </script>
+    <!--工具栏end-->
+
+		<!--upload对话框HTML-->
+    <script id="tmpl_upload_dlg" type="text/html">
+      <div>
+			  <div id="absoluteDiv" style="position:absolute;"></div>
+        <div id="divUploadContent" class="gSys-inner-netfolder">
+          <div class="gSys-body upload">
+            <div id="selectDiv" class="pos">文件上传位置： 
+              <select id="flash_upload_folder">
+              </select>
+            </div>
+            <div class="ln-thin ln-c-light"></div>
+            <div class="buttons">
+              <div class="ext txt-info">
+                      网盘剩余容量：${usableSize}
+              </div>
+              <div class="btn btn-dft" id="divUpload">
+                <span>上传文件</span>
+              </div>
+            </div>
+            <div class="intro txt-info">
+              <ul>
+                <li><span class="dot">&middot;</span>网易网盘将永久保存您的重要文件，永不过期 </li>
+                <li><span class="dot">&middot;</span>使用Flash支持批量文件上传（单个文件 ${sendLimit} M以内）</li>
+                <li><span class="dot">&middot;</span>可预览缩略图，设置文件备注</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </script>
+    <!--upload对话框HTML end-->
+
+    <!-- 列表目录项-->
+    <script id="tmpl_dir_item" type="text/html">
+       <tr class="share" id="${id}"><!--class = "share" - "over share" - "chked"-->
+         <td class="wd0"><b class="ico ico-drag"></b></td>
+        <td class="wd1 ckb"><input class="list-item-ckb" type="checkbox" /></td>
+        <td class="wd2">
+          <b class="ico ico-file ico-file-dir"></b>
+          <a href="javascript:void(0)" class="name" iid=${id}>${name}</a>
+          <span class="txt-info"></span>
+          <span class="txt-info memo">${memo}</span>
+          <span class="txt-link" style="display:none" iid=${id}>[            
+            <a href="javascript:void(0)" id= "zipdownload">打包下载</a> | 
+            <a href="javascript:void(0)" id= "rename">改名</a> | 
+            <a href="javascript:void(0)" id= "remark">备注</a>]
+          </span>
+        </td>
+        <td class="wd3"></td>
+        <td class="wd4"></td>
+      </tr>       
+    </script>
+
+    <!-- 列表文件项-->   
+    <script id="tmpl_file_item" type="text/html">
+		<tr class="share" id="${id}"><!--class = "share" - "over share" - "chked"-->
+       <td class="wd0"><b class="ico ico-drag"></b></td>
+      <td class="wd1 ckb"><input class="list-item-ckb" type="checkbox" /></td>
+      <td class="wd2">
+        <b class="ico ico-file ico-file-${icon_index}"></b>
+        <a href="javascript:void(0)" class="name" iid=${id}>${name}</a>
+        <span class="txt-info memo">${info}</span>
+        <span class="txt-link " style="display:none" iid=${id}><span>[</span>
+          <span><a href="javascript:void(0)" id= "online_preview">预览</a> |</span>
+          <span><a href="javascript:void(0)" id= "download">下载</a> |</span>
+          <span><a href="javascript:void(0)" id= "sendbyemail">发送</a> |</span>
+          <span style="display:none"><a href="javascript:void(0)" id= "remove_share">取消共享</a> |</span>
+          <span style="display:none"><a href="javascript:void(0)" id= "share">共享</a> |</span> 
+          <span><a href="javascript:void(0)" id= "rename">改名</a> |</span> 
+          <span><a href="javascript:void(0)" id= "remark">备注</a>]</span>
+        </span>
+        {{each shares}}
+        <div class="share-info" id= "${$value.id}" style="display:none">
+          <span class="col col1 txt-info">可下载数：<a href="javascript:void(0)" id="remain_download">${$value.sharedDDLimit}</a></span>
+          <span class="col col2 txt-info">共享链接：<a href="${$value.shareURL}" id="share_url">${$value.shareURL}</a></span>
+          <span class="col col3 txt-info">提取码：<span id="share_key">${$value.shareKey}</span></span>
+        </div>
+        {{/each}}
+      </td>
+      <td class="wd3">${size}</td>
+      <td class="wd4">${date}</td>
+    </tr>    
+    </script>
+
+    <!-- 图标目录项-->
+    <script id="tmpl_dir_pic_item" type="text/html">   
+      <div class="item">
+        <div class="checkbox">
+          <input id="${id}" type="checkbox" class="ipt-c">
+        </div>
+        <div class="cont">
+          <a href="javascript:void(0)" class="pic pic-icon name" iid=${id}>
+            <b class="ico ico-bfile ico-bfile-dir"></b>
+          </a>
+          <ul class="info">
+            <li><a href="javascript:void(0)" class="name pic-name" iid=${id}>${name}(${filecnt})</a></li>
+            <li class="txt-info">${size}</li>
+            <li class="txt-link">
+	            <a href="javascript:void(0)" id="pic_zipdownload">打包下载</a> |
+              <a href="javascript:void(0)" id="pic_rename" fid="${id}">改名</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </script>
+
+    <!-- 图标文件项-->
+    <script id="tmpl_file_pic_item" type="text/html">
+      <div class="item">
+        <div class="checkbox"><input id="${id}" type="checkbox" class="ipt-c" /></div>
+	      <div class="cont">
+        	<div class="name file_pic" iid=${id} fname=${name}>${fileicon}</div>
+          <ul class="info">
+			      <li><a href="javascript:void(0)" class="name" iid=${id}>${name}</a></li>
+            <li class="txt-info">${size} | ${date}</li>
+            <li class="txt-link">
+              <span><a href="javascript:void(0)" id="pic_download" fid=${id}>下载</a> |</span>
+              <span><a href="javascript:void(0)" id="pic_rename" fid=${id}>改名</a></span>
+            </li>
+          </ul>
+	      </div>
+      </div>
+    </script>
+
+    <!--upload对话框HTML-->
+    <script id="tmpl_upload_dlg" type="text/html">
+      <div>
+			  <div id="absoluteDiv" style="position:absolute;"></div>
+        <div id="divUploadContent" class="gSys-inner-netfolder">
+          <div class="gSys-body upload">
+            <div id="selectDiv" class="pos">文件上传位置： 
+              <select>
+               {{each folders}}
+            	  <option>${$value.name}</option>
+              {{/each}}
+              </select>
+            </div>
+            <div class="ln-thin ln-c-light"></div>
+            <div class="buttons">
+              <div class="ext txt-info">
+                      网盘剩余容量：${ConvertFileSize(usableSize)}
+              </div>
+              <div class="btn btn-dft" id="divUpload">
+                <span>上传文件</span>
+              </div>
+            </div>
+            <div class="intro txt-info">
+              <ul>
+                <li><span class="dot">&middot;</span>网易网盘将永久保存您的重要文件，永不过期 </li>
+                <li><span class="dot">&middot;</span>使用Flash支持批量文件上传（单个文件 ${ConvertFileSize(sendLimit)} M以内）</li>
+                <li><span class="dot">&middot;</span>可预览缩略图，设置文件备注</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </script>
+    <!--upload对话框HTML end-->
+
+    <!--move 对话框HTML-->
+    <script id="tmpl_move_dlg" type="text/html">
+    <div>
+      <div class="gSys-inner-netfolder">
+        <div class="gSys-body select">
+            <div class="gSys-header">
+                <b class="ico ico-info" title="提示："></b>
+                <div class="ct">
+                    <strong>${tips}</strong>
+                </div>
+            </div>
+            <div class="folders">
+                <iframe id="ifrSaveToNf" src="C:/Inetpub/wwwroot/dir.htm" height="100%" width="100%" frameborder="0"></iframe>
+            </div>
+        </div>
+      </div>
+    </div>
+		</script>
+    <!--move 对话框HTML end-->
+
+    <!--积分对话框-->
+    <script id="tmpl_jifen_dlg" type="text/html">
+    	<div>
+      <p>
+	      <strong>文件${name}可下载
+		      <span class="txt-succ">${dllt}</span>次，已下载
+		      <span class="txt-succ">${dlcnt}</span>次
+	      </strong>
+      </p>
+      <p class="txt-12">增加：
+	      <input id="wpJifenShareInput" type="text" class="ipt-t ipt-t-dft" value="5" maxlength="4" style="width:50px;ime-mode:Disabled" /> 次，将使用
+        <span id="wpJifenShareSpan">50</span> 个邮箱积分
+      </p>
+      <p id="wpJifenShareP" class="txt-12 txt-err" style="display:none">您的积分不足，可减少次数</p>
+      <p class="txt-12 txt-disabd">每次下载将使用 
+        <span class="txt-succ">
+  	      <strong>10</strong>
+        </span> 积分，您当前有 
+        <span class="txt-succ">
+  	      <strong>${jifen}</strong>
+        </span> 积分
+      </p>
+    </div>
+    </script>
+    
+    <!--文件描述信息对话框HTML-->
+    <script id="tmpl_file_info_dlg" type="text/html">
+      <div>
+        <div class="gSys-inner-netfolder">
+          <div class="gSys-body edit">
+            <table class="g-table-optcomm">
+              <tr>
+                <th>文件名：</th>
+                <td>
+                    <input id="filePre" type="text" class="ipt-t ipt-t-dft" value=${name} maxlength="30"/> ${suffix}
+                </td>
+              </tr>
+              <tr>
+                <th>备注：</th>
+                <td>
+                    <textarea id="fileMemo" cols="50" rows="3" class="txt-info">${memo}</textarea>
+                    <div id="fileMemoErr" class="txt-err">还可以输入50字</div>
+                </td>
+              </tr>
+              <tr id="filetype" style="display:none">
+                <th>文件类型：</th>
+                <td><b class="ico ico-file ico-file-${icon_index}"></b>&nbsp;${suffix}文件</td>
+              </tr>
+              <tr id="filecount" style="display:none">
+                <th>文件数：</th>
+                <td>${filecnt}文件</td>
+              </tr>
+              <tr id="filesize" style="display:none">
+                <th>文件大小：</th>
+                <td>${ConvertFileSize(size)}</td>
+              </tr>
+              <tr id="foldersize" style="display:none">
+                <th>文件大夹小：</th>
+                <td>${ConvertFileSize(size)}</td>
+              </tr>
+              <tr>
+                <th>所在位置：</th>
+                <td>${path}</td>
+              </tr>
+              <tr id="uploadtime" style="display:none">
+                <th>上传时间：</th>
+                <td>${date}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </script>
+    
+    <!--表单模式上传HTML代码-->
+    <script id="tmpl_normal_upload" type="text/html">
+       <div class="g-title-1">
+           <a id="path_wp" href="javascript:void(0)">网盘</a>
+          <span class="txt-link sprt">&gt;&gt;</span>
+          <h2>上传文件</h2>
+          <span class="txt-info">(基本模式)</span>
+          <span class="txt-info">容量：
+            <span class="g-probar" title="已使用${percent}">
+              <span style="width:${percent}"></span>
+            </span>
+            <span class="maxsize">${usedCapacity}/${totalCapacity}</span>
+          </span>
+      </div>
+	    <div class="ln-thick ln-c-mid"></div>
+	    <table class="gNetfolder-upload">
+		    <tbody class="pos">
+			    <tr>
+				    <th>上传位置：</th>
+				    <td>
+            	<select id="fid" name="fid" class="ipt-f">
+            		<option value="1442983">网盘</option>
+              </select>
+            </td>
+			    </tr>
+		    </tbody>
+		    <form id="postForm" action="${action}" method="post" enctype="multipart/form-data" target="ifr_form_upload">
+		    <tbody class="file">
+			    <tr class="tips">
+				    <th></th>
+				    <td>
+					    温馨提示：可上传100M以内的文件
+				    </td>
+			    </tr>
+					<input name="uid" type="hidden" />
+					<input name="product" type="hidden" />
+					<input name="parentId" type="hidden" />
+					<input name="nameConflictPolicy" type="hidden" />
+					<input name="renamePolicy" type="hidden" />
+					<input name="filename" type="hidden" />
+					<input name="type" type="hidden" />
+					<input name="callbackURL" type="hidden" />
+                    <input name="clear" type="reset" style="display:none"/>
+          {{each items}}
+			    <tr class="item">
+				    <th>${$value.no}</th>
+				    <td>
+					    <input type="file" name=${$value.name} class="ipt-f" >
+				    </td>
+			    </tr>
+         {{/each}}
+			    <tr class="item" id="uploading" style="display:none">
+				    <th></th>
+				    <td>
+					    <img src="http://mimg.126.net/xm/all/netfolder/100312/img/upload2.gif" alt="" style="margin-bottom:5px"/><br/><strong>上传中，请稍候…</strong>
+				    </td>
+			    </tr>
+		    </tbody>
+		    </form>
+		    <tbody class="submit">
+			    <tr>
+				    <th></th>
+				    <td>
+					    <div class="btn btn-dft txt-b" id="startformupload"><span>开始上传</span></div>
+					　  <div class="btn btn-dft txt-b" id="back_main_page"><span>返回</span></div>
+				    </td>
+			    </tr>
+		    </tbody>	
+	    </table>
+	    <iframe id="ifr_form_upload" name="ifr_form_upload" src="" style="display:none"></iframe>   
+    </script>
+  </head>
+
+  <body>
+		<div class="gNetfolder">
+    <div id="wp_form_upload" style="display:none">
+    </div>
+    <div id="wp_main_page">
+      <!-- 顶栏 Start -->
+      <div class="g-title-1">
+      </div>
+			<!-- 顶栏 End -->
+			<!--2010-5-19 增加提示栏-->
+      <!--
+		  <div class="tipsbar">
+			  <b class="ico ico-alert"></b>温馨提示：<a href="#">免费绑定手机邮获取<em class="txt-impt">512M</em>网盘</a>
+				<a href="#" class="btn btn-close">关闭</a>
+			</div>
+      -->
+			<!--2010-6-2 增加路径-->
+      <div class="path" style="position:relative">
+      </div>
+			<!-- 上工具栏 Start -->
+      <div class="g-toolbar toolbar-top">
+      </div>
+      <div class="ln-thin ln-c-mid"></div>
+			<!-- 上工具栏 End -->
+      <!-- 图标 start -->      
+      <div id="divPic" class ="gNetfolder-pic" style="display:none">
+        <table class="g-table-comm">
+          <thead>
+	          <tr>
+		          <th class="wd0"></th>
+              <th class="wd1 ckb"><input id="picAllCheck" type="checkbox" /></th>
+              <th class="wd2">全选</th>
+            </tr>
+          </thead>
+          <tbody class="back" style="display:none">
+	          <tr>
+		          <td class="wd0"></td>
+		          <td class="wd1 ckb"></td>
+		          <td ><a class="back-parent" href="javascript:void(0)"><b class="ico ico-back"></b>返回上级</a></td>
+	          </tr>
+          </tbody>
+        </table>       
+      	<div id="pic_Body" class="piclist">
+          <div class="nofile txt-info listempty" style="display:none">
+	      		<strong>该文件夹没有文件</strong>
+        		<strong style="display:none">没有找到相关<span class="txt-match"></span>的文件</strong>
+        	</div>
+        </div>
+      </div>
+      <!-- 图标 End -->      
+      <!-- 列表 start -->
+      <div id="divList" class="gNetfolder-list">
+      	<table class="g-table-comm">
+        	<thead>
+          	<tr>
+            	<th class="wd0"></th>
+            	<th class="wd1 ckb"><input id="listAllCheck" type="checkbox" /></th>
+            	<th id="header_filename" class="wd2">文件名<b id ="colicon_filename" class="ico ico-list-down" style="display:none"></th>
+            	<th id="header_size" class="wd3">大小<b id="colicon_size" class="ico ico-list-down" style="display:none"></b></th>
+            	<th id="header_time" class="wd4">时间<b id="colicon_time" class="ico ico-list-down"></b></th>
+          	</tr>
+        	</thead>
+          <tbody class="back" style="display:none">
+          	<tr>
+               <td class="wd0"></td>
+               <td class="wd1 ckb"></td>
+               <td colspan="3"><a class="back-parent" href="javascript:void(0)"><b class="ico ico-back"></b>返回上级</a>
+               </td>
+            </tr>
+          </tbody>
+          <tbody class="listempty" style="display:none">
+          	<tr>
+               <td colspan="5" class="nofile txt-info">
+               		<strong>该文件夹没有文件</strong>
+                  <strong style="display:none">没有找到相关<span class="txt-match"></span>的文件</strong>
+               </td>
+            </tr>
+          </tbody>
+        	<tbody class="content-table">
+        	</tbody>
+      	</table>
+      </div>
+      <!-- 列表 end -->
+			<!-- 下工具栏 Start -->
+      <div class="g-toolbar toolbar-bottom">
+      </div>
+      <!-- 下工具栏 End -->
+		</div>
+
+		<!--下载下拉菜单-->
+		<div class="g-menu" style="width:100px;display:none">
+			<div class="g-menu-inner">
+				<ul>
+					<li class="txt-b"><a href="javascript:void(0);">下载</a></li>
+					<!--<li><a href="javascript:void(0);">打包下载</a></li>-->
+				</ul>
+			</div>
+		</div>
+		<!--发送下拉菜单-->
+		<div class="g-menu send-file" style="width:130px;display:none">
+			<div class="g-menu-inner">
+				<ul>
+					<li><a href="javascript:void(0);" id = "tb_send_CommonAttachMent">以普通附件发送</a></li>
+					<li><a href="javascript:void(0);" id = "tb_send_ShareAttachment">以共享附件发送</a><!--<a href="#" class="ext">[?]</a>--></li>
+					</ul>
+			</div>
+		</div>
+    <!--排序下拉菜单-->
+    <div class="g-menu g-menu-hasico sort-file" style="width:120px;display:none">
+			<div class="g-menu-inner">
+				<ul class="tb-sort">
+					<li><a id="tb_time_desc" href="javascript:void(0);"><b class="ico ico-slct ico-slct-radio"></b>时间从新到旧</a></li>
+					<li><a id="tb_time_asc"  href="javascript:void(0);">时间从旧到新</a></li>
+					<li><a id="tb_size_desc" href="javascript:void(0);">文件从大到小</a></li>
+					<li><a id="tb_size_asc"  href="javascript:void(0);">文件从小到大</a></li>
+					<li><a id="tb_file_type" href="javascript:void(0);">按文件类型</a></li>
+          <li><a id="tb_file_name" href="javascript:void(0);">按文件名</a></li>
+				</ul>
+			</div>
+		</div>
+    <!--排序下拉菜单 end-->
+  </div>
+  </body>
+</html>
